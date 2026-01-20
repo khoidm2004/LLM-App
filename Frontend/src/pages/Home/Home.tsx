@@ -33,7 +33,7 @@ ${lines
   .slice(0, 3)
   .map(
     (line, i) =>
-      `${i + 1}. ${line.slice(0, 100)}${line.length > 100 ? "..." : ""}`,
+      `${i + 1}. ${line.slice(0, 100)}${line.length > 100 ? "..." : ""}`
   )
   .join("\n")}
 
@@ -79,7 +79,7 @@ const Home = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const activeConversation = conversations.find(
-    (c) => c.id === activeConversationId,
+    (c) => c.id === activeConversationId
   );
 
   useEffect(() => {
@@ -132,8 +132,8 @@ const Home = () => {
                   ? content.slice(0, 30) + (content.length > 30 ? "..." : "")
                   : conv.title,
             }
-          : conv,
-      ),
+          : conv
+      )
     );
 
     setIsLoading(true);
@@ -155,8 +155,8 @@ const Home = () => {
       prev.map((conv) =>
         conv.id === conversationId
           ? { ...conv, messages: [...conv.messages, assistantMessage] }
-          : conv,
-      ),
+          : conv
+      )
     );
 
     setIsLoading(false);
