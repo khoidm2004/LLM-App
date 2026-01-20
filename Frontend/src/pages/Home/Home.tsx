@@ -19,41 +19,6 @@ interface Conversation {
   messages: Message[];
 }
 
-const generateSummary = (notes: string): string => {
-  // Simulated AI response - in production, this would call an AI API
-  const wordCount = notes.split(/\s+/).length;
-  const lines = notes.split("\n").filter((line) => line.trim());
-
-  return `## Meeting Summary
-
-**Duration:** Approximately ${Math.ceil(wordCount / 150)} minutes of discussion
-
-### Key Points
-${lines
-  .slice(0, 3)
-  .map(
-    (line, i) =>
-      `${i + 1}. ${line.slice(0, 100)}${line.length > 100 ? "..." : ""}`
-  )
-  .join("\n")}
-
-### Action Items
-- [ ] Review and follow up on discussed topics
-- [ ] Schedule next meeting to continue discussion
-- [ ] Share summary with stakeholders
-
-### Decisions Made
-- Topics were discussed and preliminary agreements reached
-- Further review needed for final decisions
-
-### Next Steps
-1. Distribute this summary to all attendees
-2. Assign owners to action items
-3. Set deadline for follow-up
-
----
-*This summary was generated from ${wordCount} words of meeting notes.*`;
-};
 const Home = () => {
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -79,7 +44,7 @@ const Home = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const activeConversation = conversations.find(
-    (c) => c.id === activeConversationId
+    (c) => c.id === activeConversationId,
   );
 
   useEffect(() => {
@@ -132,34 +97,79 @@ const Home = () => {
                   ? content.slice(0, 30) + (content.length > 30 ? "..." : "")
                   : conv.title,
             }
-          : conv
-      )
+          : conv,
+      ),
     );
 
     setIsLoading(true);
 
-    // Simulate AI response delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      console.log(
+        "Sending request to:",
+        `${import.meta.env.VITE_API_LINK}/api/summarize`,
+      );
+      console.log("Content:", content);
 
-    const assistantMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      role: "assistant",
-      content: generateSummary(content),
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
+      const response = await fetch(
+        `${import.meta.env.VITE_API_LINK}/api/summarize`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ meetingMinutes: content }),
+        },
+      );
 
-    setConversations((prev) =>
-      prev.map((conv) =>
-        conv.id === conversationId
-          ? { ...conv, messages: [...conv.messages, assistantMessage] }
-          : conv
-      )
-    );
+      console.log("Response Status:", response.status);
 
-    setIsLoading(false);
+      if (!response.ok) {
+        throw new Error("Failed to get summary");
+      }
+
+      const data = await response.json();
+      console.log("Data:", data);
+
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: data.summary,
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+
+      setConversations((prev) =>
+        prev.map((conv) =>
+          conv.id === conversationId
+            ? { ...conv, messages: [...conv.messages, assistantMessage] }
+            : conv,
+        ),
+      );
+    } catch (error) {
+      console.error("Error:", error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content:
+          "Sorry, there was an error generating the summary. Please try again.",
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+
+      setConversations((prev) =>
+        prev.map((conv) =>
+          conv.id === conversationId
+            ? { ...conv, messages: [...conv.messages, errorMessage] }
+            : conv,
+        ),
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
