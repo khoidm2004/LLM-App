@@ -12,8 +12,7 @@ const Sidebar = () => {
         </button>
       </div>
       <div className="w-full py-5 border-t border-gray-400/50 justify-center items-center flex gap-4">
-        <Clock className="w-5 h-5" />
-        2 conversations
+        <Clock className="w-5 h-5" />2 conversations
       </div>
     </div>
   );

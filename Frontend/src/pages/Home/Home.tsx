@@ -202,15 +202,13 @@ const Home = () => {
                     <div className="flex gap-4 px-4 py-6 bg-accent/30">
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                         <div className="flex gap-1">
-                          <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-bounce [animation-delay:-0.3s]" />
-                          <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-bounce [animation-delay:-0.15s]" />
-                          <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-bounce" />
+                          <span className="h-1.5 w-1.5 rounded-full  animate-bounce [animation-delay:-0.3s]" />
+                          <span className="h-1.5 w-1.5 rounded-full  animate-bounce [animation-delay:-0.15s]" />
+                          <span className="h-1.5 w-1.5 rounded-full  animate-bounce" />
                         </div>
                       </div>
                       <div className="flex-1">
-                        <span className="text-sm text-muted-foreground">
-                          Generating summary...
-                        </span>
+                        <span className="text-sm">Generating summary...</span>
                       </div>
                     </div>
                   )}
