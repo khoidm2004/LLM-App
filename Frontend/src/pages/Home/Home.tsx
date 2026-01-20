@@ -6,6 +6,7 @@ import Sidebar from "../../components/Sidebar/Sidebar";
 
 const Home = () => {
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <>
@@ -16,7 +17,15 @@ const Home = () => {
           {desktopSidebarOpen && <Sidebar />}
         </div>
         <div className="flex flex-1 flex-col overflow-hidden min-w-0">
-          <ChatHeader />
+          <ChatHeader
+            onToggleSidebar={() => {
+              if (window.innerWidth <= 768) {
+                setSidebarOpen(!sidebarOpen);
+              } else {
+                setDesktopSidebarOpen(!desktopSidebarOpen);
+              }
+            }}
+          />
           <ChatContent />
           <ChatInput />
         </div>
