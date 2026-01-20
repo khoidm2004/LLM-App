@@ -35,7 +35,7 @@ const ChatInput = ({ onSend, isLoading = false }: ChatInputProps) => {
   };
 
   return (
-    <div className="border-t bg-[#f9fafc] p-3 sm:p-4">
+    <div className="border-t border-gray-400/50 bg-[#f9fafc] p-3 sm:p-4">
       <div className="mx-auto max-w-3xl">
         <div className="relative flex items-end gap-2 rounded-xl border-3 border-blue-400/50 bg-[#f1f4f9] p-2  transition-all">
           <textarea

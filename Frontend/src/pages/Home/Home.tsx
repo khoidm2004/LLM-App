@@ -44,7 +44,7 @@ const Home = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const activeConversation = conversations.find(
-    (c) => c.id === activeConversationId,
+    (c) => c.id === activeConversationId
   );
 
   useEffect(() => {
@@ -97,8 +97,8 @@ const Home = () => {
                   ? content.slice(0, 30) + (content.length > 30 ? "..." : "")
                   : conv.title,
             }
-          : conv,
-      ),
+          : conv
+      )
     );
 
     setIsLoading(true);
@@ -140,8 +140,8 @@ const Home = () => {
         prev.map((conv) =>
           conv.id === conversationId
             ? { ...conv, messages: [...conv.messages, assistantMessage] }
-            : conv,
-        ),
+            : conv
+        )
       );
     } catch (error) {
       console.error("Error:", error);
@@ -160,8 +160,8 @@ const Home = () => {
         prev.map((conv) =>
           conv.id === conversationId
             ? { ...conv, messages: [...conv.messages, errorMessage] }
-            : conv,
-        ),
+            : conv
+        )
       );
     } finally {
       setIsLoading(false);

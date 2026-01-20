@@ -6,7 +6,7 @@ interface ChatHeaderProps {
 
 const ChatHeader = ({ onToggleSidebar }: ChatHeaderProps) => {
   return (
-    <header className="flex h-20 items-center justify-between border-b px-4 md:px-6">
+    <header className="flex h-20 items-center justify-between border-b border-gray-400/50 px-4 md:px-6">
       <div className="flex items-center gap-2 sm:gap-3 md:gap-8 cursor-pointer">
         <button onClick={onToggleSidebar}>
           <Menu className="h-5 w-5" />
