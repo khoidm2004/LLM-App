@@ -6,6 +6,10 @@ import { PromptTemplate } from "@langchain/core/prompts";
 
 dotenv.config({ path: ".env" });
 
+// Debug: Check if env vars are loaded (remove after testing)
+console.log("GOOGLE_API_KEY exists:", !!process.env.GOOGLE_API_KEY);
+console.log("NODE_ENV:", process.env.NODE_ENV);
+
 const app = express();
 
 // CORS configuration
