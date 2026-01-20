@@ -34,7 +34,7 @@ app.use(
 app.use(express.json());
 
 const model = new ChatGoogleGenerativeAI({
-  model: "gemini-pro",
+  model: "gemini-1.5-flash",
   apiKey: process.env.GOOGLE_API_KEY!,
   temperature: 0.3,
 });
