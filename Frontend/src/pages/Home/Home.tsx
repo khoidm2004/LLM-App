@@ -1,29 +1,25 @@
-const Home = () => {
-  const handleClick = async () => {
-    try {
-      const response = await fetch("http://localhost:3001/health", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+import { useState } from "react";
+import ChatContent from "../../components/ChatContent/ChatContent";
+import ChatHeader from "../../components/ChatHeader/ChatHeader";
+import ChatInput from "../../components/ChatInput/ChatInput";
+import Sidebar from "../../components/Sidebar/Sidebar";
 
-      const data = await response.json();
-      console.log("API Response:", data);
-    } catch (error) {
-      console.error("Error calling API:", error);
-    }
-  };
+const Home = () => {
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
 
   return (
     <>
-      <div className="bg-red-400 h-screen">
-        <button
-          onClick={handleClick}
-          className="bg-blue-500 text-white p-4 rounded-lg"
+      <div className="flex h-screen overflow-hidden">
+        <div
+          className={`hidden md:flex transition-all duration-300 ${desktopSidebarOpen ? "w-64" : "w-0"}`}
         >
-          API Test
-        </button>
+          {desktopSidebarOpen && <Sidebar />}
+        </div>
+        <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+          <ChatHeader />
+          <ChatContent />
+          <ChatInput />
+        </div>
       </div>
     </>
   );
