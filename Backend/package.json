@@ -26,6 +26,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@langchain/openai": "^1.2.2"
+    "@langchain/community": "^1.1.4",
+    "@langchain/groq": "^1.0.3"
   }
 }
