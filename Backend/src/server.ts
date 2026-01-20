@@ -13,8 +13,8 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === "production"
-        ? "https://your-frontend.vercel.app" // Update this after deploying frontend
-        : "http://localhost:5173", // Vite default port
+        ? "https://llm-2d1qs2gxb-khoidm2004s-projects.vercel.app"
+        : "http://localhost:5173",
   }),
 );
 
