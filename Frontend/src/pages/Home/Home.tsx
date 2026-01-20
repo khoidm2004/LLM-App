@@ -104,22 +104,21 @@ const Home = () => {
     setIsLoading(true);
 
     try {
-      console.log(
-        "Sending request to:",
-        `${import.meta.env.VITE_API_LINK}/api/summarize`,
-      );
+      // Use env var for local dev, relative path for production (Vercel proxy)
+      const apiUrl = import.meta.env.VITE_API_LINK
+        ? `${import.meta.env.VITE_API_LINK}/api/summarize`
+        : "/api/summarize";
+
+      console.log("Sending request to:", apiUrl);
       console.log("Content:", content);
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_LINK}/api/summarize`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ meetingMinutes: content }),
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({ meetingMinutes: content }),
+      });
 
       console.log("Response Status:", response.status);
 
