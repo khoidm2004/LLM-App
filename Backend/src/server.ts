@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { PromptTemplate } from "@langchain/core/prompts";
 
-dotenv.config({ path: ".env.example" });
+dotenv.config({ path: ".env" });
 
 const app = express();
 
