@@ -9,12 +9,25 @@ dotenv.config({ path: ".env" });
 const app = express();
 
 // CORS configuration
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://llm-app-phi.vercel.app",
+  process.env.FRONTEND_URL, // Add additional URLs via env var
+].filter(Boolean);
+
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === "production"
-        ? "https://llm-2d1qs2gxb-khoidm2004s-projects.vercel.app"
-        : "http://localhost:5173",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
   }),
 );
 
