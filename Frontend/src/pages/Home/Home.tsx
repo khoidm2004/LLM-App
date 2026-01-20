@@ -109,9 +109,6 @@ const Home = () => {
         ? `${import.meta.env.VITE_API_LINK}/api/summarize`
         : "/api/summarize";
 
-      console.log("Sending request to:", apiUrl);
-      console.log("Content:", content);
-
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
@@ -120,7 +117,7 @@ const Home = () => {
         body: JSON.stringify({ meetingMinutes: content }),
       });
 
-      console.log("Response Status:", response.status);
+      console.log("Response:", response);
 
       if (!response.ok) {
         throw new Error("Failed to get summary");
