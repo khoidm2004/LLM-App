@@ -19,6 +19,41 @@ interface Conversation {
   messages: Message[];
 }
 
+const generateSummary = (notes: string): string => {
+  // Simulated AI response - in production, this would call an AI API
+  const wordCount = notes.split(/\s+/).length;
+  const lines = notes.split("\n").filter((line) => line.trim());
+
+  return `## Meeting Summary
+
+**Duration:** Approximately ${Math.ceil(wordCount / 150)} minutes of discussion
+
+### Key Points
+${lines
+  .slice(0, 3)
+  .map(
+    (line, i) =>
+      `${i + 1}. ${line.slice(0, 100)}${line.length > 100 ? "..." : ""}`,
+  )
+  .join("\n")}
+
+### Action Items
+- [ ] Review and follow up on discussed topics
+- [ ] Schedule next meeting to continue discussion
+- [ ] Share summary with stakeholders
+
+### Decisions Made
+- Topics were discussed and preliminary agreements reached
+- Further review needed for final decisions
+
+### Next Steps
+1. Distribute this summary to all attendees
+2. Assign owners to action items
+3. Set deadline for follow-up
+
+---
+*This summary was generated from ${wordCount} words of meeting notes.*`;
+};
 const Home = () => {
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -52,19 +87,27 @@ const Home = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [activeConversation?.messages]);
-  const handleSendMessage = async (content: string) => {
-    const newConversation: Conversation = {
-      id: Date.now().toString(),
-      title: content.slice(0, 30) + (content.length > 30 ? "..." : ""),
-      date: "Just now",
-      messages: [],
-    };
-    setConversations((prev) => [newConversation, ...prev]);
 
-    // Add user message and generate response
-    setTimeout(() => {
-      addMessage(newConversation.id, content);
-    }, 100);
+  const handleSendMessage = async (content: string) => {
+    if (!activeConversationId) {
+      // Create new conversation if none active
+      const newConversation: Conversation = {
+        id: Date.now().toString(),
+        title: content.slice(0, 30) + (content.length > 30 ? "..." : ""),
+        date: "Just now",
+        messages: [],
+      };
+      setConversations((prev) => [newConversation, ...prev]);
+      setActiveConversationId(newConversation.id);
+
+      // Add user message and generate response
+      setTimeout(() => {
+        addMessage(newConversation.id, content);
+      }, 100);
+      return;
+    }
+
+    addMessage(activeConversationId, content);
   };
 
   const addMessage = async (conversationId: string, content: string) => {
@@ -101,7 +144,7 @@ const Home = () => {
     const assistantMessage: Message = {
       id: (Date.now() + 1).toString(),
       role: "assistant",
-      content: "Here is a summary of your meeting",
+      content: generateSummary(content),
       timestamp: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -139,31 +182,33 @@ const Home = () => {
           />
           <div className="flex flex-1 flex-col overflow-hidden">
             {activeConversation && activeConversation.messages.length > 0 ? (
-              <div className="mx-auto max-w-3xl">
-                {activeConversation.messages.map((message) => (
-                  <ChatContent
-                    key={message.id}
-                    role={message.role}
-                    content={message.content}
-                    timestamp={message.timestamp}
-                  />
-                ))}
-                {isLoading && (
-                  <div className="flex gap-4 px-4 py-6 bg-accent/30">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                      <div className="flex gap-1">
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-bounce [animation-delay:-0.3s]" />
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-bounce [animation-delay:-0.15s]" />
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-bounce" />
+              <div className="flex-1 overflow-y-auto" ref={scrollRef}>
+                <div className="mx-auto max-w-3xl">
+                  {activeConversation.messages.map((message) => (
+                    <ChatContent
+                      key={message.id}
+                      role={message.role}
+                      content={message.content}
+                      timestamp={message.timestamp}
+                    />
+                  ))}
+                  {isLoading && (
+                    <div className="flex gap-4 px-4 py-6 bg-accent/30">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                        <div className="flex gap-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-bounce [animation-delay:-0.3s]" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-bounce [animation-delay:-0.15s]" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-bounce" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <span className="text-sm text-muted-foreground">
+                          Generating summary...
+                        </span>
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <span className="text-sm text-muted-foreground">
-                        Generating summary...
-                      </span>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             ) : (
               <ChatPlaceHolder />

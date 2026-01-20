@@ -21,7 +21,7 @@ const ChatPlaceHolder = () => {
   ];
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center p-4 sm:p-8">
+    <div className="flex flex-1 flex-col items-center justify-center p-4 sm:p-8 bg-gray-100/50">
       <div className="mx-auto max-w-2xl text-center">
         <div className="mb-6 flex justify-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-300/50">
