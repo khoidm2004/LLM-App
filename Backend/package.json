@@ -15,7 +15,6 @@
   "packageManager": "pnpm@10.28.1",
   "devDependencies": {
     "@langchain/core": "^1.1.15",
-    "@langchain/google-genai": "^2.1.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.9",
@@ -25,5 +24,8 @@
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@langchain/openai": "^1.2.2"
   }
 }

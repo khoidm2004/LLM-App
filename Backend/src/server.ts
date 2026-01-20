@@ -1,13 +1,13 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 
 dotenv.config({ path: ".env" });
 
 // Debug: Check if env vars are loaded (remove after testing)
-console.log("GOOGLE_API_KEY exists:", !!process.env.GOOGLE_API_KEY);
+console.log("DEEPSEEK_API_KEY exists:", !!process.env.DEEPSEEK_API_KEY);
 console.log("NODE_ENV:", process.env.NODE_ENV);
 
 const app = express();
@@ -37,9 +37,13 @@ app.use(
 
 app.use(express.json());
 
-const model = new ChatGoogleGenerativeAI({
-  model: "gemini-2.0-flash",
-  apiKey: process.env.GOOGLE_API_KEY!,
+// DeepSeek uses OpenAI-compatible API
+const model = new ChatOpenAI({
+  model: "deepseek-chat",
+  apiKey: process.env.DEEPSEEK_API_KEY!,
+  configuration: {
+    baseURL: "https://api.deepseek.com",
+  },
   temperature: 0.3,
 });
 
@@ -64,20 +68,16 @@ app.post("/api/summarize", async (req, res) => {
 
     console.log("=== Request received ===");
     console.log("Meeting minutes length:", meetingMinutes?.length);
-    console.log("API Key exists:", !!process.env.GOOGLE_API_KEY);
-    console.log(
-      "API Key first 10 chars:",
-      process.env.GOOGLE_API_KEY?.substring(0, 10),
-    );
+    console.log("API Key exists:", !!process.env.DEEPSEEK_API_KEY);
 
     if (!meetingMinutes || meetingMinutes.trim() === "") {
       return res.status(400).json({ error: "Meeting minutes are required" });
     }
 
-    console.log("Calling Gemini API...");
+    console.log("Calling DeepSeek API...");
     const chain = prompt.pipe(model);
     const result = await chain.invoke({ meetingMinutes });
-    console.log("Gemini response received:", !!result.content);
+    console.log("DeepSeek response received:", !!result.content);
 
     res.json({ summary: result.content });
   } catch (error) {
@@ -104,11 +104,7 @@ app.get("/health", (req, res) => {
 // Test AI endpoint
 app.get("/api/test-ai", async (req, res) => {
   try {
-    console.log("Testing AI connection...");
-    console.log(
-      "API Key:",
-      process.env.GOOGLE_API_KEY?.substring(0, 15) + "...",
-    );
+    console.log("Testing DeepSeek connection...");
 
     const result = await model.invoke("Say hello in one word");
 
