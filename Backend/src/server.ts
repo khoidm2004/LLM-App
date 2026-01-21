@@ -61,34 +61,14 @@ Provide a clear, concise, and well-organized summary:
 app.post("/api/summarize", async (req, res) => {
   try {
     const { meetingMinutes } = req.body;
-
-    console.log("=== Request received ===");
-    console.log("Meeting minutes length:", meetingMinutes?.length);
-    console.log("API Key exists:", !!process.env.GROQ_API_KEY);
-    console.log(
-      "API Key first 10 chars:",
-      process.env.GROQ_API_KEY?.substring(0, 10),
-    );
-
     if (!meetingMinutes || meetingMinutes.trim() === "") {
       return res.status(400).json({ error: "Meeting minutes are required" });
     }
-
-    console.log("Calling Gemini API...");
     const chain = prompt.pipe(model);
     const result = await chain.invoke({ meetingMinutes });
-    console.log("Gemini response received:", !!result.content);
 
     res.json({ summary: result.content });
   } catch (error) {
-    console.error("=== ERROR ===");
-    console.error("Error type:", error?.constructor?.name);
-    console.error(
-      "Error message:",
-      error instanceof Error ? error.message : error,
-    );
-    console.error("Full error:", JSON.stringify(error, null, 2));
-
     res.status(500).json({
       error: "Failed to summarize meeting",
       details: error instanceof Error ? error.message : "Unknown error",
@@ -99,30 +79,6 @@ app.post("/api/summarize", async (req, res) => {
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
-});
-
-// Test AI endpoint
-app.get("/api/test-ai", async (req, res) => {
-  try {
-    console.log("Testing AI connection...");
-    console.log(
-      "API Key:",
-      process.env.GROQ_API_KEY?.substring(0, 15) + "...",
-    );
-
-    const result = await model.invoke("Say hello in one word");
-
-    res.json({
-      success: true,
-      response: result.content,
-    });
-  } catch (error) {
-    console.error("AI Test Error:", error);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
 });
 
 const PORT = process.env.PORT || 3001;
