@@ -56,8 +56,8 @@ Meeting minutes typically contain:
 - Date/time information
 - Topics discussed in a professional context
 
-If the text is NOT meeting minutes (e.g., random text, stories, code, personal messages, advertisements, etc.), respond EXACTLY with this JSON format:
-{{"error": "INVALID_INPUT", "message": "The provided text does not appear to be meeting minutes. Please provide actual meeting minutes containing discussions, decisions, or action items."}}
+If the text is NOT meeting minutes (e.g., random text, stories, code, personal messages, advertisements, etc.), respond EXACTLY with this format:
+"The provided text does not appear to be meeting minutes. Please provide actual meeting minutes containing discussions, decisions, or action items."
 
 If the text IS valid meeting minutes, provide a structured summary in the following format:
 
