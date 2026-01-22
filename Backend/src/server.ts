@@ -57,14 +57,16 @@ Meeting minutes typically contain:
 - Topics discussed in a professional context
 
 If the text is NOT meeting minutes (e.g., random text, stories, code, personal messages, advertisements, etc.), respond EXACTLY with this format:
-"The provided text does not appear to be meeting minutes. Please provide actual meeting minutes containing discussions, decisions, or action items."
+The provided text does not appear to be meeting minutes. Please provide actual meeting minutes containing discussions, decisions, or action items.
 
 If the text IS valid meeting minutes, provide a structured summary in the following format:
 
-1. KEY DECISIONS: List the main decisions made
-2. ACTION ITEMS: List all action items with owners and deadlines
-3. IMPORTANT DISCUSSION POINTS: Highlight key topics discussed
-4. NEXT STEPS: What happens next
+1. DATE & ATTENDEES: List the date and attendees
+2. BRIEF SUMMARY: A short overview of the meeting
+3. KEY DECISIONS: List the main decisions made
+4. ACTION ITEMS: List all action items with owners and deadlines
+5. IMPORTANT DISCUSSION POINTS: Highlight key topics discussed
+6. NEXT STEPS: What happens next
 
 Meeting Minutes to Analyze:
 {meetingMinutes}
