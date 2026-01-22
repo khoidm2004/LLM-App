@@ -44,18 +44,32 @@ const model = new ChatGroq({
 });
 
 const prompt = PromptTemplate.fromTemplate(`
-You are a professional meeting summarizer. Analyze the following meeting minutes and provide a structured summary.
+You are a professional meeting summarizer with validation capabilities.
 
-Format your response as follows:
+FIRST, analyze if the provided text is actually meeting minutes or meeting-related content.
+
+Meeting minutes typically contain:
+- Discussion of topics or agenda items
+- Decisions made or conclusions reached
+- Action items or tasks assigned
+- Participant information or attendees
+- Date/time information
+- Topics discussed in a professional context
+
+If the text is NOT meeting minutes (e.g., random text, stories, code, personal messages, advertisements, etc.), respond EXACTLY with this JSON format:
+{{"error": "INVALID_INPUT", "message": "The provided text does not appear to be meeting minutes. Please provide actual meeting minutes containing discussions, decisions, or action items."}}
+
+If the text IS valid meeting minutes, provide a structured summary in the following format:
+
 1. KEY DECISIONS: List the main decisions made
 2. ACTION ITEMS: List all action items with owners and deadlines
 3. IMPORTANT DISCUSSION POINTS: Highlight key topics discussed
 4. NEXT STEPS: What happens next
 
-Meeting Minutes:
+Meeting Minutes to Analyze:
 {meetingMinutes}
 
-Provide a clear, concise, and well-organized summary:
+Remember: If not meeting minutes, return the error JSON. If valid, provide the structured summary.
 `);
 
 app.post("/api/summarize", async (req, res) => {
