@@ -21,7 +21,10 @@ const allowedOrigins = [
   process.env.FRONTEND_URL, // Add additional URLs via env var
 ].filter(Boolean);
 
-app.use(morgan("combined"));
+app.use(morgan("combined", {
+  skip: (req) => req.path === "/health"   // use your actual health path
+}));
+
 app.use(
   cors({
     origin: (origin, callback) => {
