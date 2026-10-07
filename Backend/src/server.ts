@@ -38,9 +38,8 @@ app.use(
 app.use(express.json());
 
 const model = new ChatGroq({
-  model: "llama-3.1-8b-instant",
+  model: "openai/gpt-oss-120b",
   apiKey: process.env.GROQ_API_KEY!,
-  temperature: 0.3,
 });
 
 const prompt = PromptTemplate.fromTemplate(`
