@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  const API_URL = process.env.BACKEND_URL;
+  const API_URL =  import.meta.env.VITE_API_URL;
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
