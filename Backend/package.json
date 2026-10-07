@@ -17,9 +17,10 @@
     "@langchain/core": "^1.1.15",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/morgan": "^1.9.10",
     "@types/node": "^25.0.9",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
+    "dotenv": "^16.6.1",
     "express": "^5.2.1",
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
@@ -27,6 +28,7 @@
   },
   "dependencies": {
     "@langchain/community": "^1.1.4",
-    "@langchain/groq": "^1.0.3"
+    "@langchain/groq": "^1.0.3",
+    "morgan": "^1.12.1"
   }
 }

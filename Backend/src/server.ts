@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { ChatGroq } from "@langchain/groq";
 import { PromptTemplate } from "@langchain/core/prompts";
+import morgan from "morgan";
 
 dotenv.config({ path: ".env" });
 
@@ -20,6 +21,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL, // Add additional URLs via env var
 ].filter(Boolean);
 
+app.use(morgan("combined"));
 app.use(
   cors({
     origin: (origin, callback) => {
