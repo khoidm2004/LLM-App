@@ -35,9 +35,9 @@ const ChatInput = ({ onSend, isLoading = false }: ChatInputProps) => {
   };
 
   return (
-    <div className="border-t border-gray-400/50 bg-[#f9fafc] p-3 sm:p-4">
+    <div className="border-t border-gray-400/50 dark:border-gray-700 bg-[#f9fafc] dark:bg-gray-950 p-3 sm:p-4">
       <div className="mx-auto max-w-3xl">
-        <div className="relative flex items-end gap-2 rounded-xl border-3 border-blue-400/50 bg-[#f1f4f9] p-2  transition-all">
+        <div className="relative flex items-end gap-2 rounded-xl border-3 border-blue-400/50 dark:border-blue-500/40 bg-[#f1f4f9] dark:bg-gray-800 p-2  transition-all">
           <textarea
             ref={textareaRef}
             value={message}
@@ -45,7 +45,7 @@ const ChatInput = ({ onSend, isLoading = false }: ChatInputProps) => {
             onKeyDown={handleKeyDown}
             placeholder="Paste your meeting notes here..."
             disabled={isLoading}
-            className="min-h-11 max-h-50 flex-1 resize-none bg-[#f1f4f9] p-2 text-sm"
+            className="min-h-11 max-h-50 flex-1 resize-none bg-[#f1f4f9] dark:bg-gray-800 dark:text-gray-100 p-2 text-sm"
             rows={1}
           />
           <button
@@ -60,7 +60,7 @@ const ChatInput = ({ onSend, isLoading = false }: ChatInputProps) => {
             )}
           </button>
         </div>
-        <p className="mt-2 text-center text-xs md:text-base">
+        <p className="mt-2 text-center text-xs md:text-base dark:text-gray-400">
           Press Enter to send, Shift+Enter for new line
         </p>
       </div>

@@ -68,7 +68,7 @@ If the text IS valid meeting minutes, provide a structured summary in the follow
 1. DATE & ATTENDEES: List the date and attendees
 2. BRIEF SUMMARY: A short overview of the meeting
 3. KEY DECISIONS: List the main decisions made
-4. ACTION ITEMS: List all action items with owners and deadlines
+4. ACTION ITEMS: Present every action item as a markdown table with exactly these columns: Action Item | Owner | Deadline. Use standard markdown table syntax (a header row, then a |---|---|---| separator row, then one row per action item). If no deadline was mentioned, write "TBD" in that cell.
 5. IMPORTANT DISCUSSION POINTS: Highlight key topics discussed
 6. NEXT STEPS: What happens next
 
@@ -76,6 +76,7 @@ Apply the following highlight rules consistently throughout the summary:
 - Each of the 6 section headers above must be bold. Example: **1. DATE & ATTENDEES:**
 - Any important note, warning, risk, or caveat must be underlined. Example: <u>This deadline is at risk of slipping.</u>
 - Every mention of a person's name must be both bold AND underlined. Example: <u>**Jane Doe**</u>
+- Inside the ACTION ITEMS table, the Owner cell must still follow the bold+underlined name rule, e.g. | Finalize budget | <u>**Jane Doe**</u> | 2026-12-01 |
 
 Meeting Minutes to Analyze:
 {meetingMinutes}

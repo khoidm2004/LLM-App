@@ -1,4 +1,5 @@
 import { Menu, Settings } from "lucide-react";
+import ThemeToggle from "../ThemeToggle/ThemeToggle";
 
 interface ChatHeaderProps {
   onToggleSidebar: () => void;
@@ -6,7 +7,7 @@ interface ChatHeaderProps {
 
 const ChatHeader = ({ onToggleSidebar }: ChatHeaderProps) => {
   return (
-    <header className="flex h-20 items-center justify-between border-b border-gray-400/50 px-4 md:px-6">
+    <header className="flex h-20 items-center justify-between border-b border-gray-400/50 dark:border-gray-700 px-4 md:px-6 bg-white dark:bg-gray-950 dark:text-gray-100">
       <div className="flex items-center gap-2 sm:gap-3 md:gap-8 cursor-pointer">
         <button onClick={onToggleSidebar}>
           <Menu className="h-5 w-5" />
@@ -33,9 +34,12 @@ const ChatHeader = ({ onToggleSidebar }: ChatHeaderProps) => {
           <h1 className="font-semibold text-2xl">MeetRecap</h1>
         </div>
       </div>
-      <button>
-        <Settings className="h-5 w-5" />
-      </button>
+      <div className="flex items-center gap-1">
+        <ThemeToggle />
+        <button>
+          <Settings className="h-5 w-5" />
+        </button>
+      </div>
     </header>
   );
 };

@@ -1,1 +1,28 @@
 @import "tailwindcss";
+
+/* Lets `dark:` utilities be driven by a `.dark` class on <html> instead of
+   only following OS-level prefers-color-scheme, so the in-app toggle works. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+body {
+  background-color: #fff;
+  color: #111827;
+}
+
+.dark body {
+  background-color: #030712;
+  color: #f3f4f6;
+}
+
+@keyframes bubble-dot {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
