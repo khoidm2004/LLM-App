@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "MeetRecap Backend & Supabase Architecture",
+    "output": ".archify/architecture-backend-supabase-20261127-224717/backend-supabase-architecture.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/khoidm2004/LLM-App",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "4312959fe34a8c1ea697adb7109fddde1e509f46"
+    }
+  },
+  "layout": { "mode": "auto" },
+  "components": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "Frontend",
+      "sublabel": "React app (Vercel)",
+      "pos": [40, 320],
+      "size": [130, 60]
+    },
+    {
+      "id": "summarize_text_route",
+      "type": "backend",
+      "label": "POST /api/summarize",
+      "sublabel": "paste-text path, no Supabase",
+      "sources": [{ "path": "Backend/src/server.ts", "line": 90, "end_line": 106, "label": "handler" }],
+      "pos": [250,40],
+      "size": [160, 60]
+    },
+    {
+      "id": "upload_route",
+      "type": "backend",
+      "label": "POST /api/upload",
+      "sublabel": "multer, ≤3 files, 10MB each",
+      "explanation": "Validates extension/size via multer limits + fileFilter, upserts the upload_sessions row, enforces the cumulative 3-files-per-session cap, then uploads each file to Storage and inserts its uploaded_files row. Best-effort removes the Storage object if the DB insert fails.",
+      "sources": [
+        { "path": "Backend/src/routes/upload.ts", "line": 14, "end_line": 28, "label": "multer + fileFilter" },
+        { "path": "Backend/src/routes/upload.ts", "line": 36, "end_line": 124, "label": "upload handler" }
+      ],
+      "pos": [250,200],
+      "size": [160, 60]
+    },
+    {
+      "id": "summarize_doc_route",
+      "type": "backend",
+      "label": "POST /api/summarize-documents",
+      "sublabel": "orchestrates extract + prompt",
+      "explanation": "Looks up the session, lists its uploaded_files, downloads each from Storage, extracts text, concatenates, and prompts the LLM at the requested length (short/medium/detailed) before storing the result in summaries.",
+      "sources": [{ "path": "Backend/src/routes/summarizeDocuments.ts", "line": 30, "end_line": 119, "label": "handler" }],
+      "pos": [250,400],
+      "size": [195, 60]
+    },
+    {
+      "id": "text_extraction",
+      "type": "backend",
+      "label": "Text extraction",
+      "sublabel": "pdf-parse / mammoth / word-extractor",
+      "explanation": "Dispatches by file extension: pdf-parse for PDF, mammoth for DOCX, word-extractor for legacy OLE-based DOC (best-effort), plain UTF-8 read for TXT.",
+      "sources": [
+        { "path": "Backend/src/lib/textExtraction.ts", "line": 8, "end_line": 42, "label": "per-type extractors" },
+        { "path": "Backend/src/lib/textExtraction.ts", "line": 47, "end_line": 74, "label": "extractText dispatch" }
+      ],
+      "pos": [250,580],
+      "size": [160, 60]
+    },
+    {
+      "id": "view_summary_route",
+      "type": "backend",
+      "label": "GET /api/sessions/:token/summary",
+      "sublabel": "\"view\" activity",
+      "sources": [{ "path": "Backend/src/routes/summarizeDocuments.ts", "line": 123, "end_line": 169, "label": "handler" }],
+      "pos": [250,740],
+      "size": [215, 60]
+    },
+    {
+      "id": "groq_llm",
+      "type": "external",
+      "label": "Groq API",
+      "sublabel": "openai/gpt-oss-120b",
+      "explanation": "Same model for both the paste-text and document-upload summarizers. llama-3.3-70b-versatile was tried for the document summarizer first but returned a 404 model_not_found when verified against production, so it was switched to the model already confirmed working.",
+      "sources": [
+        { "path": "Backend/src/server.ts", "line": 48, "end_line": 51, "label": "paste-text model" },
+        { "path": "Backend/src/routes/summarizeDocuments.ts", "line": 19, "end_line": 22, "label": "document model" }
+      ],
+      "pos": [540,100],
+      "size": [150, 60]
+    },
+    {
+      "id": "storage_bucket",
+      "type": "cloud",
+      "label": "Storage: meeting-documents",
+      "sublabel": "private bucket",
+      "sources": [
+        { "path": "supabase/migrations/20261127191102_meeting_uploads.sql", "line": 53, "end_line": 59, "label": "bucket creation" },
+        { "path": "Backend/src/routes/upload.ts", "line": 80, "end_line": 85, "label": "upload call site" }
+      ],
+      "pos": [540,280],
+      "size": [170, 60]
+    },
+    {
+      "id": "postgres_db",
+      "type": "database",
+      "label": "Postgres",
+      "sublabel": "sessions · files · summaries",
+      "explanation": "RLS enabled and forced on all three tables with zero policies (default-deny). The backend's service_role key bypasses RLS and is the only intended caller; this is defense in depth, not the access-control mechanism itself.",
+      "sources": [{ "path": "supabase/migrations/20261127191102_meeting_uploads.sql", "line": 10, "end_line": 51, "label": "schema + RLS" }],
+      "pos": [540,460],
+      "size": [170, 60]
+    },
+    {
+      "id": "cleanup_edge_function",
+      "type": "backend",
+      "label": "Edge Function",
+      "sublabel": "cleanup-stale-sessions",
+      "explanation": "Finds upload_sessions idle 20+ minutes, lists and removes their Storage objects, then deletes the session row (uploaded_files/summaries cascade via FK). Runs on a schedule, not on client activity.",
+      "sources": [
+        { "path": "supabase/functions/cleanup-stale-sessions/index.ts", "line": 25, "end_line": 46, "label": "query stale sessions" },
+        { "path": "supabase/functions/cleanup-stale-sessions/index.ts", "line": 57, "end_line": 82, "label": "delete files + row" }
+      ],
+      "pos": [740, 370],
+      "size": [150, 60]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Render — Express backend (meetrecap-backend)",
+      "wraps": ["summarize_text_route", "upload_route", "summarize_doc_route", "view_summary_route", "text_extraction"]
+    },
+    {
+      "kind": "region",
+      "label": "Supabase project (mperhmypqmzbhngpieyf)",
+      "wraps": ["postgres_db", "storage_bucket", "cleanup_edge_function"]
+    }
+  ],
+  "connections": [
+    { "from": "client", "to": "summarize_text_route", "label": "paste meeting minutes" },
+    { "from": "summarize_text_route", "to": "groq_llm", "label": "invoke" },
+    { "from": "client", "to": "upload_route", "label": "multipart upload" },
+    { "from": "upload_route", "to": "postgres_db", "label": "upsert session, insert file row" },
+    { "from": "upload_route", "to": "storage_bucket", "label": "upload file bytes" },
+    { "from": "client", "to": "summarize_doc_route", "label": "sessionToken, length" },
+    { "from": "summarize_doc_route", "to": "postgres_db", "label": "select files, insert summary" },
+    { "from": "summarize_doc_route", "to": "storage_bucket", "label": "download file bytes" },
+    { "from": "summarize_doc_route", "to": "text_extraction", "label": "extractText(file)" },
+    { "from": "summarize_doc_route", "to": "groq_llm", "label": "invoke" },
+    { "from": "client", "to": "view_summary_route", "label": "poll latest summary" },
+    { "from": "view_summary_route", "to": "postgres_db", "label": "select latest, touch session" },
+    { "from": "postgres_db", "to": "cleanup_edge_function", "label": "pg_cron */10 * * * * -> pg_net POST", "variant": "dashed" },
+    { "from": "cleanup_edge_function", "to": "postgres_db", "label": "select stale, delete cascade" },
+    { "from": "cleanup_edge_function", "to": "storage_bucket", "label": "list + remove stale files" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Ownership", "items": ["Render runs the Express app: both summarizers and all 3 upload routes", "Supabase owns persistence: Postgres, the private bucket, and the cleanup function", "Groq is the only external LLM dependency, same model for both summarizers"] },
+    { "dot": "rose", "title": "Security posture", "items": ["RLS enabled + forced on all 3 tables, zero policies (default-deny)", "Only the service_role key (backend + Edge Function) bypasses RLS", "meeting-documents bucket is private; no public policy exists"] },
+    { "dot": "emerald", "title": "Operational notes", "items": ["Supabase client is created lazily so missing config can't crash /api/summarize", "Cleanup cron's HTTP timeout was raised to 15s after a cold-start timeout at the 5s default", "Cleanup runs on a schedule, independent of whether any client is still open"] }
+  ]
+}
