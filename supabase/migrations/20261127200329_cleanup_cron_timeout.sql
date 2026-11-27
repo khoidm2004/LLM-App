@@ -7,7 +7,10 @@ select cron.alter_job(
   (select jobid from cron.job where jobname = 'cleanup-stale-upload-sessions'),
   command := $$
   select net.http_post(
-    url := 'https://mperhmypqmzbhngpieyf.supabase.co/functions/v1/cleanup-stale-sessions',
+    url := (
+      select decrypted_secret from vault.decrypted_secrets
+      where name = 'cleanup_stale_sessions_function_url'
+    ),
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer ' || (
