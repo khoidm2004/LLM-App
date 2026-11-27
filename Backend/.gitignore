@@ -1,4 +1,8 @@
 node_modules
 .env*
 dist
-.claude
+
+# Claude Code skill installer artifacts (local dev tooling, not app code)
+.agents/
+.claude/
+skills-lock.json

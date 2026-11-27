@@ -4,6 +4,9 @@ import dotenv from "dotenv";
 import { ChatGroq } from "@langchain/groq";
 import { PromptTemplate } from "@langchain/core/prompts";
 import morgan from "morgan";
+import multer from "multer";
+import uploadRouter from "./routes/upload";
+import summarizeDocumentsRouter from "./routes/summarizeDocuments";
 
 dotenv.config({ path: ".env" });
 
@@ -102,10 +105,42 @@ app.post("/api/summarize", async (req, res) => {
   }
 });
 
+app.use(uploadRouter);
+app.use(summarizeDocumentsRouter);
+
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
+
+// Converts multer's upload errors (oversized file, too many files, a
+// disallowed extension from the fileFilter) into a clear 400 instead of
+// Express's default 500.
+app.use(
+  (
+    err: unknown,
+    _req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+  ) => {
+    if (err instanceof multer.MulterError) {
+      const messages: Record<string, string> = {
+        LIMIT_FILE_SIZE: "One of the files is too large. Max size is 10MB per file.",
+        LIMIT_FILE_COUNT: "Too many files. You can upload at most 3 files per session.",
+        LIMIT_UNEXPECTED_FILE: "Unexpected file field.",
+      };
+      res.status(400).json({ error: messages[err.code] ?? err.message });
+      return;
+    }
+    if (err instanceof Error) {
+      // The upload route's fileFilter throws a plain Error for disallowed
+      // extensions; multer forwards it here the same way.
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    next(err);
+  },
+);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
