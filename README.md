@@ -2,6 +2,8 @@
 
 A web application that uses LLM to summarize meeting minutes into structured, actionable insights.
 
+[![Architecture Diagram](https://img.shields.io/badge/📐_Architecture_Diagram-view_live-blue)](https://khoidm2004.github.io/LLM-App/)
+
 ![App Image](https://i.ibb.co/zVxhXWWF/Meet-Recap.png)
 
 ## Features ✨

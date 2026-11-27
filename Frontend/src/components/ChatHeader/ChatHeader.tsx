@@ -1,11 +1,12 @@
-import { Menu, Settings } from "lucide-react";
+import { Menu, Settings, HelpCircle } from "lucide-react";
 import ThemeToggle from "../ThemeToggle/ThemeToggle";
 
 interface ChatHeaderProps {
   onToggleSidebar: () => void;
+  onOpenHelp: () => void;
 }
 
-const ChatHeader = ({ onToggleSidebar }: ChatHeaderProps) => {
+const ChatHeader = ({ onToggleSidebar, onOpenHelp }: ChatHeaderProps) => {
   return (
     <header className="flex h-20 items-center justify-between border-b border-gray-400/50 dark:border-gray-700 px-4 md:px-6 bg-white dark:bg-gray-950 dark:text-gray-100">
       <div className="flex items-center gap-2 sm:gap-3 md:gap-8 cursor-pointer">
@@ -35,6 +36,14 @@ const ChatHeader = ({ onToggleSidebar }: ChatHeaderProps) => {
         </div>
       </div>
       <div className="flex items-center gap-1">
+        <button
+          onClick={onOpenHelp}
+          title="How to use MeetRecap"
+          aria-label="How to use MeetRecap"
+          className="rounded-lg p-1.5 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+        >
+          <HelpCircle className="h-5 w-5" />
+        </button>
         <ThemeToggle />
         <button>
           <Settings className="h-5 w-5" />
