@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "f3141a94-e57b-4340-a302-61c444fbebb0",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/Users/dominhkhoi/Project/MeetRecap/.claude/worktrees/optimize-summarize-prompt/.archify/architecture-backend-supabase-20261127-224717/candidate.json",
+  "output": "/Users/dominhkhoi/Project/MeetRecap/.claude/worktrees/optimize-summarize-prompt/.archify/architecture-backend-supabase-20261127-224717/backend-supabase-architecture.html",
+  "specification": {
+    "sha256": "d7885fa72e3941cdd1c831fe88ceb7cf2c582b5a89d526cee27c808ee401c6f7",
+    "bytes": 8530
+  },
+  "artifact": {
+    "sha256": "ca1475c5ec99f710691538cb4d1694438e9034226759292a69f6b456f634493d",
+    "bytes": 962077
+  }
+}

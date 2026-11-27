@@ -9,7 +9,18 @@ The backend is a **Node.js + Express** server that handles meeting summarization
 ```
 Backend/
 ├── src/
-│   └── server.ts           # Main server file (entry point)
+│   ├── server.ts                   # Main server file (entry point, mounts routes)
+│   ├── routes/
+│   │   ├── upload.ts                # POST /api/upload
+│   │   └── summarizeDocuments.ts    # POST /api/summarize-documents, GET /api/sessions/:token/summary
+│   ├── lib/
+│   │   ├── supabaseClient.ts        # Lazy service-role Supabase client
+│   │   ├── uploadSessions.ts        # upload_sessions upsert/lookup helpers
+│   │   ├── textExtraction.ts        # PDF/DOCX/DOC/TXT text extraction
+│   │   ├── fileValidation.ts        # Allowed extensions, size/count limits
+│   │   └── documentSummaryPrompt.ts # Prompt for the document-upload summarizer
+│   └── types/
+│       └── mammoth.d.ts             # Minimal type declarations (mammoth ships none)
 ├── dist/                   # Compiled JavaScript output
 ├── .env                    # Environment variables (not in git)
 ├── .gitignore              # Git ignore rules
@@ -17,6 +28,8 @@ Backend/
 ├── pnpm-lock.yaml          # Lock file
 └── tsconfig.json           # TypeScript configuration
 ```
+
+See the [root README](../README.md) for the architecture diagram showing how these pieces connect to Supabase and Groq.
 
 ## Architecture Diagram
 
@@ -43,7 +56,7 @@ Backend/
 │                      │              │                │  │
 │                      │  ┌───────────▼─────────────┐  │  │
 │                      │  │       ChatGroq          │  │  │
-│                      │  │  (llama-3.1-8b-instant) │  │  │
+│                      │  │  (openai/gpt-oss-120b)  │  │  │
 │                      │  └─────────────────────────┘  │  │
 │                      └───────────────────────────────┘  │
 │                                                         │
@@ -102,7 +115,7 @@ Input (meetingMinutes)
           │
           ▼
 ┌───────────────────┐
-│     ChatGroq      │  ← Sends to Groq API (Llama 3.1 8B)
+│     ChatGroq      │  ← Sends to Groq API (openai/gpt-oss-120b)
 └─────────┬─────────┘
           │
           ▼
@@ -111,13 +124,18 @@ Input (meetingMinutes)
 
 ## Key Technologies
 
-| Package           | Purpose                         |
-| ----------------- | ------------------------------- |
-| `express`         | Web server framework            |
-| `cors`            | Cross-origin resource sharing   |
-| `dotenv`          | Environment variable management |
-| `@langchain/groq` | Groq LLM integration            |
-| `@langchain/core` | LangChain core utilities        |
+| Package                  | Purpose                                      |
+| ------------------------- | --------------------------------------------- |
+| `express`                 | Web server framework                          |
+| `cors`                    | Cross-origin resource sharing                 |
+| `dotenv`                  | Environment variable management               |
+| `@langchain/groq`         | Groq LLM integration                          |
+| `@langchain/core`         | LangChain core utilities                      |
+| `@supabase/supabase-js`   | Storage + Postgres client (document upload)   |
+| `multer`                  | Multipart file upload handling                |
+| `pdf-parse`               | PDF text extraction                           |
+| `mammoth`                 | DOCX text extraction                          |
+| `word-extractor`          | Legacy DOC text extraction (best-effort)      |
 
 ## Environment Variables
 
