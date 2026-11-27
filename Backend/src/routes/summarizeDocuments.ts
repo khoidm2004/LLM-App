@@ -12,10 +12,12 @@ import {
   type SummaryLength,
 } from "../lib/documentSummaryPrompt";
 
-// Larger context window than the chat-paste summarizer, since this handles
-// up to 3 concatenated documents instead of one pasted block of text.
+// Same model as the chat-paste summarizer (server.ts): confirmed available
+// on this Groq account and has a large enough context window for up to 3
+// concatenated documents. (llama-3.3-70b-versatile returned a 404
+// model_not_found on this account when verified against production.)
 const model = new ChatGroq({
-  model: "llama-3.3-70b-versatile",
+  model: "openai/gpt-oss-120b",
   apiKey: process.env.GROQ_API_KEY!,
 });
 
