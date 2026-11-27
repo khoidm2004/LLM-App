@@ -6,6 +6,7 @@ import {
 } from "../lib/supabaseClient";
 import { getSessionByToken, touchSession } from "../lib/uploadSessions";
 import { extractText, TextExtractionError } from "../lib/textExtraction";
+import { isMeetingContent } from "../lib/isMeetingContent";
 import {
   buildDocumentSummaryPrompt,
   SUMMARY_LENGTHS,
@@ -20,6 +21,16 @@ const model = new ChatGroq({
   model: "openai/gpt-oss-120b",
   apiKey: process.env.GROQ_API_KEY!,
 });
+
+// Caps the text actually sent to the main summarization prompt. Without
+// this, a long irrelevant upload (which has already been rejected by
+// isMeetingContent in the normal case, but this also guards genuinely long
+// meeting documents) could approach the model's context limit and turn
+// into a slow, opaque failure instead of a clean response.
+const MAX_DOCUMENT_CHARS = 50_000;
+
+const NOT_MEETING_CONTENT_MESSAGE =
+  "<u>The uploaded documents do not appear to contain meeting minutes. Please upload documents containing discussions, decisions, or action items.</u>";
 
 const isSummaryLength = (value: unknown): value is SummaryLength =>
   typeof value === "string" &&
@@ -87,10 +98,38 @@ router.post("/api/summarize-documents", async (req, res) => {
     }
 
     const documentText = documentSections.join("\n\n");
-    const prompt = buildDocumentSummaryPrompt(length);
-    const chain = prompt.pipe(model);
-    const result = await chain.invoke({ documentText });
-    const summaryContent = String(result.content);
+
+    // Fast relevance check before the slow, detailed summarization call —
+    // a non-meeting upload gets rejected in roughly the time of one short
+    // LLM call instead of waiting through a full generation (which, for a
+    // long irrelevant document, could also hit the model's context limit
+    // and fail with an opaque error instead of ever returning a rejection).
+    if (!(await isMeetingContent(documentText))) {
+      res.status(400).json({ error: NOT_MEETING_CONTENT_MESSAGE });
+      return;
+    }
+
+    const truncatedDocumentText =
+      documentText.length > MAX_DOCUMENT_CHARS
+        ? documentText.slice(0, MAX_DOCUMENT_CHARS) +
+          "\n\n[... truncated: the combined documents were too long to process in full ...]"
+        : documentText;
+
+    let summaryContent: string;
+    try {
+      const prompt = buildDocumentSummaryPrompt(length);
+      const chain = prompt.pipe(model);
+      const result = await chain.invoke({ documentText: truncatedDocumentText });
+      summaryContent = String(result.content);
+    } catch (groqError) {
+      console.error("Groq summarization call failed:", groqError);
+      res.status(502).json({
+        error:
+          "The AI summarization service couldn't process this document. Try again, or upload a shorter document.",
+        details: groqError instanceof Error ? groqError.message : "Unknown error",
+      });
+      return;
+    }
 
     const { data: summaryRow, error: summaryError } = await supabase
       .from("summaries")
