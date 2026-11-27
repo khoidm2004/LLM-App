@@ -1,11 +1,53 @@
 import { Bot, User, Copy, Check } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
   content: string;
   timestamp?: string;
 }
+
+// Parses **bold** and <u>underline</u> markers from the AI response into
+// real React elements (no HTML injection), supporting nesting like <u>**Name**</u>.
+const parseFormattedText = (text: string, keyPrefix = "n"): ReactNode[] => {
+  const boldMatch = text.match(/\*\*([\s\S]+?)\*\*/);
+  const underlineMatch = text.match(/<u>([\s\S]+?)<\/u>/);
+
+  let match: RegExpMatchArray | null = null;
+  let isBold = false;
+
+  if (boldMatch && underlineMatch) {
+    isBold = boldMatch.index! <= underlineMatch.index!;
+    match = isBold ? boldMatch : underlineMatch;
+  } else if (boldMatch) {
+    match = boldMatch;
+    isBold = true;
+  } else if (underlineMatch) {
+    match = underlineMatch;
+    isBold = false;
+  }
+
+  if (!match || match.index === undefined) {
+    return [text];
+  }
+
+  const before = text.slice(0, match.index);
+  const after = text.slice(match.index + match[0].length);
+  const innerNodes = parseFormattedText(match[1], `${keyPrefix}-i`);
+
+  const nodes: ReactNode[] = [];
+  if (before) nodes.push(before);
+  nodes.push(
+    isBold ? (
+      <strong key={`${keyPrefix}-b`}>{innerNodes}</strong>
+    ) : (
+      <u key={`${keyPrefix}-u`}>{innerNodes}</u>
+    ),
+  );
+  nodes.push(...parseFormattedText(after, `${keyPrefix}-a`));
+
+  return nodes;
+};
 
 const ChatContent = ({ role, content, timestamp }: ChatMessageProps) => {
   const [copied, setCopied] = useState(false);
@@ -42,7 +84,9 @@ const ChatContent = ({ role, content, timestamp }: ChatMessageProps) => {
         </div>
 
         <div className="prose prose-sm max-w-none text-base">
-          <div className="whitespace-pre-wrap">{content}</div>
+          <div className="whitespace-pre-wrap select-text">
+            {parseFormattedText(content)}
+          </div>
         </div>
 
         {isAssistant && (
