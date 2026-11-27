@@ -5,6 +5,12 @@ import ChatInput from "../../components/ChatInput/ChatInput";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import ChatPlaceHolder from "../../components/ChatPlaceHolder/ChatPlaceHolder";
 import TypingIndicator from "../../components/TypingIndicator/TypingIndicator";
+import { getOrCreateSessionToken } from "../../lib/uploadSession";
+import {
+  summarizeDocuments,
+  uploadDocuments,
+  type SummaryLength,
+} from "../../lib/documentUpload";
 
 interface Message {
   id: string;
@@ -19,6 +25,9 @@ interface Conversation {
   date: string;
   messages: Message[];
 }
+
+const nowLabel = () =>
+  new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
 const Home = () => {
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
@@ -48,6 +57,9 @@ const Home = () => {
     new Set()
   );
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Stable per-browser identifier for the document-upload session (the app
+  // has no login), scoped to Storage/DB rows on the backend.
+  const sessionTokenRef = useRef(getOrCreateSessionToken());
 
   const markMessageAnimated = (id: string) => {
     setAnimatedMessageIds((prev) => new Set(prev).add(id));
@@ -63,54 +75,69 @@ const Home = () => {
     }
   }, [activeConversation?.messages]);
 
-  const handleSendMessage = async (content: string) => {
+  const appendMessage = (conversationId: string, message: Message) => {
+    setConversations((prev) =>
+      prev.map((conv) =>
+        conv.id === conversationId
+          ? { ...conv, messages: [...conv.messages, message] }
+          : conv
+      )
+    );
+  };
+
+  const appendUserMessage = (conversationId: string, content: string) => {
+    const titleSeed = content.slice(0, 30) + (content.length > 30 ? "..." : "");
+    setConversations((prev) =>
+      prev.map((conv) =>
+        conv.id === conversationId
+          ? {
+              ...conv,
+              messages: [
+                ...conv.messages,
+                {
+                  id: Date.now().toString(),
+                  role: "user",
+                  content,
+                  timestamp: nowLabel(),
+                },
+              ],
+              title: conv.messages.length === 0 ? titleSeed : conv.title,
+            }
+          : conv
+      )
+    );
+  };
+
+  // Creates a new conversation (seeded with a title) if none is active yet,
+  // then runs `action` against it. New conversations need a tick before
+  // their id is usable as the active one, hence the setTimeout.
+  const ensureConversation = (
+    titleSeed: string,
+    action: (conversationId: string) => void
+  ) => {
     if (!activeConversationId) {
-      // Create new conversation if none active
       const newConversation: Conversation = {
         id: Date.now().toString(),
-        title: content.slice(0, 30) + (content.length > 30 ? "..." : ""),
+        title: titleSeed.slice(0, 30) + (titleSeed.length > 30 ? "..." : ""),
         date: "Just now",
         messages: [],
       };
       setConversations((prev) => [newConversation, ...prev]);
       setActiveConversationId(newConversation.id);
-
-      // Add user message and generate response
-      setTimeout(() => {
-        addMessage(newConversation.id, content);
-      }, 100);
+      setTimeout(() => action(newConversation.id), 100);
       return;
     }
-
-    addMessage(activeConversationId, content);
+    action(activeConversationId);
   };
 
-  const addMessage = async (conversationId: string, content: string) => {
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content,
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
-
-    setConversations((prev: Conversation[]) =>
-      prev.map((conv) =>
-        conv.id === conversationId
-          ? {
-              ...conv,
-              messages: [...conv.messages, userMessage],
-              title:
-                conv.messages.length === 0
-                  ? content.slice(0, 30) + (content.length > 30 ? "..." : "")
-                  : conv.title,
-            }
-          : conv
-      )
+  const handleSendMessage = (content: string) => {
+    ensureConversation(content, (conversationId) =>
+      runSummarizeText(conversationId, content)
     );
+  };
 
+  const runSummarizeText = async (conversationId: string, content: string) => {
+    appendUserMessage(conversationId, content);
     setIsLoading(true);
 
     try {
@@ -127,52 +154,71 @@ const Home = () => {
         body: JSON.stringify({ meetingMinutes: content }),
       });
 
-      console.log("Response:", response);
-
       if (!response.ok) {
         throw new Error("Failed to get summary");
       }
 
       const data = await response.json();
-      console.log("Data:", data);
 
-      const assistantMessage: Message = {
+      appendMessage(conversationId, {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: data.summary,
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
-
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.id === conversationId
-            ? { ...conv, messages: [...conv.messages, assistantMessage] }
-            : conv
-        )
-      );
+        timestamp: nowLabel(),
+      });
     } catch (error) {
       console.error("Error:", error);
-      const errorMessage: Message = {
+      appendMessage(conversationId, {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content:
           "Sorry, there was an error generating the summary. Please try again.",
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
+        timestamp: nowLabel(),
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.id === conversationId
-            ? { ...conv, messages: [...conv.messages, errorMessage] }
-            : conv
-        )
-      );
+  const handleUploadSummarize = (files: File[], length: SummaryLength) => {
+    const label = `Uploaded ${files.length} file${files.length > 1 ? "s" : ""}: ${files
+      .map((f) => f.name)
+      .join(", ")}`;
+    ensureConversation(label, (conversationId) =>
+      runUploadSummarize(conversationId, files, length, label)
+    );
+  };
+
+  const runUploadSummarize = async (
+    conversationId: string,
+    files: File[],
+    length: SummaryLength,
+    label: string
+  ) => {
+    appendUserMessage(conversationId, label);
+    setIsLoading(true);
+
+    try {
+      await uploadDocuments(sessionTokenRef.current, files);
+      const summary = await summarizeDocuments(sessionTokenRef.current, length);
+
+      appendMessage(conversationId, {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: summary,
+        timestamp: nowLabel(),
+      });
+    } catch (error) {
+      console.error("Error:", error);
+      appendMessage(conversationId, {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content:
+          error instanceof Error
+            ? error.message
+            : "Sorry, there was an error generating the summary from your documents. Please try again.",
+        timestamp: nowLabel(),
+      });
     } finally {
       setIsLoading(false);
     }
@@ -225,7 +271,11 @@ const Home = () => {
             ) : (
               <ChatPlaceHolder />
             )}
-            <ChatInput onSend={handleSendMessage} isLoading={isLoading} />
+            <ChatInput
+              onSend={handleSendMessage}
+              onUploadSummarize={handleUploadSummarize}
+              isLoading={isLoading}
+            />
           </div>
         </div>
       </div>
