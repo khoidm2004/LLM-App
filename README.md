@@ -87,8 +87,3 @@ A web application that uses LLM to summarize meeting minutes into structured, ac
    pnpm run dev
    ```
 
-5. Open [http://localhost:5173](http://localhost:5173) in your browser
-
-## Demo 🎬
-
-[Watch Demo on YouTube ▶️](https://youtu.be/dfypiwCNp2A)
