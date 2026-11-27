@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 .env
+
+# playwright-cli local test artifacts
+.playwright-cli/

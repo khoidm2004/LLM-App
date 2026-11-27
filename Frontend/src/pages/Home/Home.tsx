@@ -5,7 +5,9 @@ import ChatInput from "../../components/ChatInput/ChatInput";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import ChatPlaceHolder from "../../components/ChatPlaceHolder/ChatPlaceHolder";
 import TypingIndicator from "../../components/TypingIndicator/TypingIndicator";
+import OnboardingModal from "../../components/OnboardingModal/OnboardingModal";
 import { getOrCreateSessionToken } from "../../lib/uploadSession";
+import { hasSeenOnboarding, markOnboardingSeen } from "../../lib/onboarding";
 import {
   summarizeDocuments,
   uploadDocuments,
@@ -33,6 +35,7 @@ const Home = () => {
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(() => !hasSeenOnboarding());
   const [conversations, setConversations] = useState<Conversation[]>([
     {
       id: "1",
@@ -63,6 +66,11 @@ const Home = () => {
 
   const markMessageAnimated = (id: string) => {
     setAnimatedMessageIds((prev) => new Set(prev).add(id));
+  };
+
+  const dismissOnboarding = () => {
+    markOnboardingSeen();
+    setShowOnboarding(false);
   };
 
   const activeConversation = conversations.find(
@@ -241,6 +249,7 @@ const Home = () => {
                 setDesktopSidebarOpen(!desktopSidebarOpen);
               }
             }}
+            onOpenHelp={() => setShowOnboarding(true)}
           />
           <div className="flex flex-1 flex-col overflow-hidden">
             {activeConversation && activeConversation.messages.length > 0 ? (
@@ -279,6 +288,7 @@ const Home = () => {
           </div>
         </div>
       </div>
+      {showOnboarding && <OnboardingModal onClose={dismissOnboarding} />}
     </>
   );
 };
