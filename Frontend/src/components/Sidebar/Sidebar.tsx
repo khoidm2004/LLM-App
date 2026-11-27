@@ -2,7 +2,7 @@ import { Clock, Plus } from "lucide-react";
 
 const Sidebar = () => {
   return (
-    <div className="flex h-full w-64 flex-col border-r border-gray-400/50">
+    <div className="flex h-full w-64 flex-col border-r border-gray-400/50 dark:border-gray-700 bg-white dark:bg-gray-950 dark:text-gray-100">
       <div className="p-4 flex-1">
         <button className="w-full justify-start gap-2 cursor-pointer rounded-xl py-3 bg-[#0384c5] text-white">
           <div className="flex gap-4 px-5">
@@ -11,7 +11,7 @@ const Sidebar = () => {
           </div>
         </button>
       </div>
-      <div className="w-full py-5 border-t border-gray-400/50 justify-center items-center flex gap-4">
+      <div className="w-full py-5 border-t border-gray-400/50 dark:border-gray-700 justify-center items-center flex gap-4">
         <Clock className="w-5 h-5" />0 conversations
       </div>
     </div>

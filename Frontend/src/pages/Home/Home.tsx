@@ -4,6 +4,7 @@ import ChatHeader from "../../components/ChatHeader/ChatHeader";
 import ChatInput from "../../components/ChatInput/ChatInput";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import ChatPlaceHolder from "../../components/ChatPlaceHolder/ChatPlaceHolder";
+import TypingIndicator from "../../components/TypingIndicator/TypingIndicator";
 
 interface Message {
   id: string;
@@ -41,7 +42,16 @@ const Home = () => {
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
   >(null);
+  // Tracks which assistant messages have already finished their typewriter
+  // animation, so re-renders (e.g. scrolling, switching tabs) don't replay it.
+  const [animatedMessageIds, setAnimatedMessageIds] = useState<Set<string>>(
+    new Set()
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const markMessageAnimated = (id: string) => {
+    setAnimatedMessageIds((prev) => new Set(prev).add(id));
+  };
 
   const activeConversation = conversations.find(
     (c) => c.id === activeConversationId
@@ -170,7 +180,7 @@ const Home = () => {
 
   return (
     <>
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-screen overflow-hidden bg-white dark:bg-gray-950">
         <div
           className={`hidden md:flex transition-all duration-300 ${desktopSidebarOpen ? "w-64" : "w-0"}`}
         >
@@ -190,28 +200,26 @@ const Home = () => {
             {activeConversation && activeConversation.messages.length > 0 ? (
               <div className="flex-1 overflow-y-auto" ref={scrollRef}>
                 <div className="mx-auto max-w-3xl">
-                  {activeConversation.messages.map((message) => (
-                    <ChatContent
-                      key={message.id}
-                      role={message.role}
-                      content={message.content}
-                      timestamp={message.timestamp}
-                    />
-                  ))}
-                  {isLoading && (
-                    <div className="flex gap-4 px-4 py-6 bg-accent/30">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                        <div className="flex gap-1">
-                          <span className="h-1.5 w-1.5 rounded-full  animate-bounce [animation-delay:-0.3s]" />
-                          <span className="h-1.5 w-1.5 rounded-full  animate-bounce [animation-delay:-0.15s]" />
-                          <span className="h-1.5 w-1.5 rounded-full  animate-bounce" />
-                        </div>
-                      </div>
-                      <div className="flex-1">
-                        <span className="text-sm">Generating summary...</span>
-                      </div>
-                    </div>
-                  )}
+                  {activeConversation.messages.map((message, index) => {
+                    const isLastMessage =
+                      index === activeConversation.messages.length - 1;
+                    return (
+                      <ChatContent
+                        key={message.id}
+                        role={message.role}
+                        content={message.content}
+                        timestamp={message.timestamp}
+                        shouldAnimate={
+                          isLastMessage &&
+                          !animatedMessageIds.has(message.id)
+                        }
+                        onAnimationComplete={() =>
+                          markMessageAnimated(message.id)
+                        }
+                      />
+                    );
+                  })}
+                  {isLoading && <TypingIndicator />}
                 </div>
               </div>
             ) : (

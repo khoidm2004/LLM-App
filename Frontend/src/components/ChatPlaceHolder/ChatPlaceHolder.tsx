@@ -21,18 +21,18 @@ const ChatPlaceHolder = () => {
   ];
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center p-4 sm:p-8 bg-gray-100/50">
+    <div className="flex flex-1 flex-col items-center justify-center p-4 sm:p-8 bg-gray-100/50 dark:bg-gray-900">
       <div className="mx-auto max-w-2xl text-center">
         <div className="mb-6 flex justify-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-300/50">
-            <FileText className="h-8 w-8 text-blue-500" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-300/50 dark:bg-blue-500/20">
+            <FileText className="h-8 w-8 text-blue-500 dark:text-blue-400" />
           </div>
         </div>
 
-        <h2 className="mb-2 text-xl sm:text-2xl font-semibold">
+        <h2 className="mb-2 text-xl sm:text-2xl font-semibold dark:text-gray-100">
           Welcome to MeetRecap
         </h2>
-        <p className="mb-6 sm:mb-8 text-sm sm:text-base">
+        <p className="mb-6 sm:mb-8 text-sm sm:text-base dark:text-gray-300">
           Transform your meeting notes into clear, actionable summaries. Just
           paste your notes below to get started.
         </p>
@@ -41,13 +41,15 @@ const ChatPlaceHolder = () => {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="rounded-xl border border-blue-300/80 p-4 text-left transition-colors "
+              className="rounded-xl border border-blue-300/80 dark:border-blue-500/30 dark:bg-gray-800/40 p-4 text-left transition-colors "
             >
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-300/50">
-                <feature.icon className="h-5 w-5 text-blue-500" />
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-300/50 dark:bg-blue-500/20">
+                <feature.icon className="h-5 w-5 text-blue-500 dark:text-blue-400" />
               </div>
-              <h3 className="mb-1 font-medium">{feature.title}</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="mb-1 font-medium dark:text-gray-100">
+                {feature.title}
+              </h3>
+              <p className="text-sm text-muted-foreground dark:text-gray-400">
                 {feature.description}
               </p>
             </div>
