@@ -9,9 +9,11 @@ interface ChatMessageProps {
 
 // Parses **bold** and <u>underline</u> markers from the AI response into
 // real React elements (no HTML injection), supporting nesting like <u>**Name**</u>.
-const parseFormattedText = (text: string, keyPrefix = "n"): ReactNode[] => {
-  const boldMatch = text.match(/\*\*([\s\S]+?)\*\*/);
-  const underlineMatch = text.match(/<u>([\s\S]+?)<\/u>/);
+// Matches don't cross a blank line, so a marker left unclosed in one paragraph
+// can't swallow unrelated later paragraphs looking for its closing pair.
+const parseFormattedText = (text: string, keyPrefix = "root"): ReactNode[] => {
+  const boldMatch = text.match(/\*\*((?:(?!\n\n)[\s\S])+?)\*\*/);
+  const underlineMatch = text.match(/<u>((?:(?!\n\n)[\s\S])+?)<\/u>/);
 
   let match: RegExpMatchArray | null = null;
   let isBold = false;
@@ -85,7 +87,7 @@ const ChatContent = ({ role, content, timestamp }: ChatMessageProps) => {
 
         <div className="prose prose-sm max-w-none text-base">
           <div className="whitespace-pre-wrap select-text">
-            {parseFormattedText(content)}
+            {isAssistant ? parseFormattedText(content) : content}
           </div>
         </div>
 
