@@ -72,10 +72,15 @@ If the text IS valid meeting minutes, provide a structured summary in the follow
 5. IMPORTANT DISCUSSION POINTS: Highlight key topics discussed
 6. NEXT STEPS: What happens next
 
+Apply the following highlight rules consistently throughout the summary:
+- Each of the 6 section headers above must be bold. Example: **1. DATE & ATTENDEES:**
+- Any important note, warning, risk, or caveat must be underlined. Example: <u>This deadline is at risk of slipping.</u>
+- Every mention of a person's name must be both bold AND underlined. Example: <u>**Jane Doe**</u>
+
 Meeting Minutes to Analyze:
 {meetingMinutes}
 
-Remember: If not meeting minutes, return the error JSON. If valid, provide the structured summary.
+Remember: If not meeting minutes, return the error JSON. If valid, provide the structured summary, applying the bold/underline highlight rules above.
 `);
 
 app.post("/api/summarize", async (req, res) => {
